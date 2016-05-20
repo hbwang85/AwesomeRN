@@ -20,7 +20,10 @@ class AwesomeRN extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      movies: null,
+      dataSource: new ListView.DataSource({
+        rowHasChanged: (row1, row2) => row1 != row2,
+      }),
+      loaded: false,
     }
   }
 
@@ -33,7 +36,8 @@ class AwesomeRN extends Component {
     .then((response) => response.json())
     .then((responseData) => {
       this.setState({
-        movies: responseData.movies,
+          dataSource: this.state.dataSource.cloneWithRows(responseData.movies),
+          loaded: true,
       });
     })
     .done();
@@ -41,14 +45,24 @@ class AwesomeRN extends Component {
 
 
   render() {
-    if (!this.state.movies) {
+    if (!this.state.loaded) {
       return this.renderLoadingView()
     }
 
     //TODO How to invoke the action below
-    var movie = this.state.movies[0]
-    return this.renderMovie(movie);
-}
+    // var movie = this.state.movies[0]
+    // return this.renderMovie(movie);
+
+    return (
+      <ListView
+        dataSource={this.state.dataSource}
+        renderRow={this.renderMovie}
+        style={styles.ListView}
+        />
+    );
+
+
+  }
 
   renderLoadingView() {
     return (
@@ -84,6 +98,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#F5FCFF',
+  },
+  ListView: {
+    paddingTop: 20,
     backgroundColor: '#F5FCFF',
   },
   title: {
